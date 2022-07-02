@@ -6,6 +6,7 @@ struct Game {
     map: Matrix,
     ball_x: u8,
     ball_y: u8,
+    win: bool
 }
 
 fn get_user_input() -> String {
@@ -91,7 +92,12 @@ impl Game {
                 map[i-1][x] = "o";
                 map[y][x] = ".";
                 self.map = map.to_vec();
-                return ();
+                return;
+            } else if map[i][x] == "O" {
+                map[y][x] = ".";
+                self.map = map.to_vec();
+                self.win = true;
+                return;
             }
         }
 
@@ -105,8 +111,9 @@ impl Game {
 fn main() {
     let mut game = Game {
         map: get_map(),
-        ball_x: 0,
+        ball_x: 1,
         ball_y: 4,
+        win: false,
     };
     let mut additional_output = "";
 
@@ -114,6 +121,10 @@ fn main() {
         println!("{}", additional_output);
         clear();
         game.display();
+        if game.win {
+            println!("You win!");
+            break;
+        }
 
         let input = get_user_input();
         if verify_user_input(&input) {
@@ -124,6 +135,7 @@ fn main() {
             }
 
             game.handle_physics();
+
         } else {
             additional_output = "Invaild input!"
         }
@@ -133,11 +145,11 @@ fn main() {
 fn get_map() -> Matrix {
     // i don't know what to say...
     vec![
-        vec!["O", ".", ".", ".", "."],
-        vec![".", ".", "|", ".", "."],
-        vec!["-", "-", "-", ".", "."],
-        vec![".", ".", ".", ".", "."],
-        vec!["o", ".", ".", ".", "."],
+        vec![".", ".", ".", "-", "-"],
+        vec![".", ".", "-", ".", "O"],
+        vec!["-", "-", ".", ".", "|"],
+        vec![".", ".", ".", "|", "."],
+        vec![".", "o", ".", "|", "."],
     ]
 }
 
