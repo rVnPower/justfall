@@ -1,9 +1,33 @@
+use std::io;
+
 type Matrix = Vec<Vec<&'static str>>;
 
 struct Game {
     map: Matrix,
     ball_x: u8,
     ball_y: u8,
+}
+
+fn get_user_input() -> String {
+    let mut input = String::new();
+    io::stdin().read_line(&mut input).expect("Failed to get input");
+    input
+}
+
+fn verify_user_input(input: &String) -> bool {
+    if input.chars().next().unwrap().is_ascii_alphabetic() {
+        true
+    } else {
+        false
+    }
+}
+
+fn change_wall_direction(e: &'static str) -> &'static str{
+    match e {
+        "|" => "-",
+        "-" => "|",
+        _ => e,
+    }
 }
 
 impl Game {
@@ -20,12 +44,8 @@ impl Game {
                 // Clockwise
                 if rotation == 'w' {
                     let mut e = map[row-1-j][i];
+                    e = change_wall_direction(e);
 
-                    if e == "|" {
-                        e = "-";
-                    } else if e == "-" {
-                        e = "|";
-                    }
                     if e == "o" {
                         self.ball_x = j as u8;
                         self.ball_y = i as u8;
@@ -36,12 +56,8 @@ impl Game {
                 // Counter-clockwise
                 else if rotation == 'c' {
                     let mut e = map[j][col-1-i];
+                    e = change_wall_direction(e);
 
-                    if e == "|" {
-                        e = "-";
-                    } else if e == "-" {
-                        e = "|";
-                    }
                     if e == "o" {
                         self.ball_x = j as u8;
                         self.ball_y = i as u8;
@@ -92,10 +108,26 @@ fn main() {
         ball_x: 0,
         ball_y: 4,
     };
-    game.rotate_map('c');
-    game.rotate_map('c');
-    game.handle_physics();
-    game.display();
+    let mut additional_output = "";
+
+    loop {
+        println!("{}", additional_output);
+        clear();
+        game.display();
+
+        let input = get_user_input();
+        if verify_user_input(&input) {
+            match input.chars().next().unwrap() {
+                'a' => game.rotate_map('c'),
+                'd' => game.rotate_map('w'),
+                _ => continue,
+            }
+
+            game.handle_physics();
+        } else {
+            additional_output = "Invaild input!"
+        }
+    }
 }
 
 fn get_map() -> Matrix {
@@ -107,4 +139,8 @@ fn get_map() -> Matrix {
         vec![".", ".", ".", ".", "."],
         vec!["o", ".", ".", ".", "."],
     ]
+}
+
+fn clear() {
+    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
 }
